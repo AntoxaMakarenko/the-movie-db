@@ -1,176 +1,136 @@
 import React from 'react';
 import { useState, useEffect } from 'react'
 import {
-    IonContent,
-    IonPage,
-    IonCard,
-    IonCardHeader,
-    IonCardTitle,
-    IonCardContent,
-    IonInfiniteScroll,
-    IonInfiniteScrollContent,
-    IonCardSubtitle,
-    IonInput,
-    IonItem, IonSearchbar,
+	IonContent,
+	IonPage,
+	IonCard,
+	IonCardHeader,
+	IonCardTitle,
+	IonCardContent,
+	IonInfiniteScroll,
+	IonInfiniteScrollContent,
+	IonCardSubtitle,
+	IonInput,
+	IonItem,
 } from '@ionic/react';
 import axios from "axios";
 
+const ROOT_URL = 'https://api.themoviedb.org/3/search/movie';
+const API_KEY = 'fe596d9ecc661f727490237e8d8c7bf8';
+
+const getQueryParams = ({ searchTerm, page}) => {
+	switch (true) {
+		case Boolean(searchTerm):
+			return `&query=${searchTerm}&page=${page}`
+		default:
+			return `&page=${page}`
+	}
+}
+
 export const HomePage: React.FC = () => {
-    const [cardsData, setCardsData] = useState<any[]>([]);
-    const [page, setPage] = useState<number>(1);
-    const [searchTerm, setSearchTerm] = useState<string>('');
-    const [stopScroll, setStopScroll] = useState(false);
-    const [request, setRequest] = useState('')
-    const [newMovies, setNewMovies] = useState([])
-    const [notMovies, setNotMovies] = useState(false)
+	const [cardsData, setCardsData] = useState<any[]>([]);
+	const [page, setPage] = useState<number>(1);
+	const [searchTerm, setSearchTerm] = useState<string | undefined>();
+	const [stopScroll, setStopScroll] = useState<boolean>(false);
+	const [isLoading, setIsLoading] = useState<boolean>(false);
+	// const [isLoading, setIsLoading] = useState<boolean>(false);
 
 
-    const apiUrl = `https://api.themoviedb.org/3/search/movie?api_key=fe596d9ecc661f727490237e8d8c7bf8&query=${searchTerm}&page=${page}`;
+	const loadData = async (pageNumber: number, loadMore?: true) => {
+		const resp = await axios.get(`${ROOT_URL}?api_key=${API_KEY}${getQueryParams({ searchTerm, page: pageNumber })}`)
 
-    const onInput = (ev: Event) => {
-        const value = (ev.target as HTMLIonInputElement).value as string;
-        const movie = value
-        const result = movie.charAt(0).toUpperCase() + movie.slice(1)
-        setPage(1)
-        setSearchTerm(result)
-    };
+		const movies = resp.data.results ? resp.data.results : [];
 
-    useEffect(() => {
-        loadData()
-        console.log('1');
-    }, [searchTerm ]);
+		if (loadMore) {
+			setCardsData(prev => [...prev, ...movies])
+		} else {
+			setCardsData(movies)
+		}
 
-    useEffect(() => {
-        console.log('2')
-        onUpdatePage()
-    }, [newMovies])
+		if (movies.length < 20 && searchTerm) {
+			setStopScroll(true)
+		} else {
+			setStopScroll(false)
+		}
 
-    useEffect(() => {
-        console.log('3')
-        if (searchTerm === request) {
-            loadData()
-        }
-    }, [page])
+		setIsLoading(false)
+	}
 
-    const loadData = () => {
-        console.log('page', page);
-        axios.get (apiUrl)
-            .then((resp) => {
-                console.log('4')
+	useEffect(() => {
 
-                const movies = resp.data.results;
+		let debounceTimeout = null;
 
-                setNewMovies(movies)
+		if (debounceTimeout) {
+			clearTimeout(debounceTimeout);
+		}
 
-                if (movies.length < 20 && searchTerm) {
-                    setStopScroll(true)
-                } else {
-                    setStopScroll(false)
-                }
+		if (searchTerm !== undefined) {
+			setIsLoading(true);
+			debounceTimeout = setTimeout(async () => {
+				setPage(1);
+				await loadData(1);
+			}, 1500)
+		}
 
-                if (movies.length === 0 && searchTerm !== '') {
-                    setNotMovies(true)
-                } else {
-                    setNotMovies(false)
-                }
+		return () => {
+			clearTimeout(debounceTimeout)
+		}
+	}, [searchTerm])
 
-            })
-            .catch((error) => {
-                console.error('Error fetching data:', error);
-            });
-    };
+	return (
+		<IonPage>
+			<IonContent>
+				<IonItem className="ion-input-container">
+					<IonInput
+						label="Search movie"
+						color="success"
+						// value={test}
+						onIonInput={e => setSearchTerm(e.target.value)}
+					>
+					</IonInput>
+					{isLoading && <ion-spinner name="crescent" />}
+				</IonItem>
+				{
+					cardsData.length > 0 && cardsData.map((el, i) => (
+						<div key={i}>
+							<IonCard style={{display: 'flex'}}>
+								<img
+									alt="Logo of movie"
+									src={`https://image.tmdb.org/t/p/w500/${el.poster_path}`}
+									style={{ height: '250px', objectFit: 'contain', padding: '16px'}}
+								/>
+								<div style={{display: 'flex', flexDirection: 'column'}}>
+									<IonCardHeader>
+										<IonCardTitle>{el.original_title}</IonCardTitle>
+										<IonCardSubtitle>{el.release_date}</IonCardSubtitle>
+									</IonCardHeader>
+									<IonCardContent>{el.overview}</IonCardContent>
 
-    const loadMoreData  =  () => {
-        console.log('8');
-        setPage(prevState => prevState + 1)
-    };
-
-    const onUpdatePage = () => {
-        if (cardsData.length === 0) {
-            console.log('cardsData', cardsData);
-            console.log('5');
-            setCardsData(newMovies)
-            setRequest(searchTerm)
-            return
-        } else if ((request === searchTerm) && (cardsData.length > 0)) {
-            console.log('6');
-            setCardsData(() => [...cardsData, ...newMovies]);
-        } else if ((request !== searchTerm) && (cardsData.length > 0)) {
-            console.log('7');
-            setPage(1)
-            if(page === 1) {
-                setCardsData(newMovies)
-                setRequest(searchTerm)
-            }
-        }
-    }
-
-    return (
-        <IonPage>
-            <IonContent>
-                <IonItem className="ion-input-container">
-                    <IonInput
-                        label="Search movie"
-                        debounce={2000}
-                        color="success"
-                        value={searchTerm}
-                        onIonInput={onInput}
-                        // ref={ionInputEl}
-                    >
-                    </IonInput>
-                </IonItem>
-                {/*<IonSearchbar*/}
-                {/*    debounce={2000}*/}
-                {/*    style={{marginTop: '100px'}}*/}
-                {/*    value={searchTerm}*/}
-                {/*    onIonChange={onInput}*/}
-                {/*    placeholder="Search for cards"*/}
-                {/*/>*/}
-
-                {
-                    cardsData.length > 0 && cardsData.map((el, i) => (
-                        <div key={i}>
-                            <IonCard style={{display: 'flex'}}>
-                                <img
-                                    alt="Logo of movie"
-                                    src={`https://image.tmdb.org/t/p/w500/${el.poster_path}`}
-                                    style={{ height: '250px', objectFit: 'contain', padding: '16px'}}
-                                />
-                                <div style={{display: 'flex', flexDirection: 'column'}}>
-                                    <IonCardHeader>
-                                        <IonCardTitle>{el.original_title}</IonCardTitle>
-                                        <IonCardSubtitle>{el.release_date}</IonCardSubtitle>
-                                    </IonCardHeader>
-                                    <IonCardContent>{el.overview}</IonCardContent>
-
-                                </div>
-                            </IonCard>
-                        </div>
-                    ))
-                }
-                {
-                    (!stopScroll) && (
-                        <IonInfiniteScroll onIonInfinite={(e) => {
-
-                            setTimeout(() => {
-                                e.target.complete()
-                                loadMoreData()
-                            }, 500)
-                        }}>
-                            <IonInfiniteScrollContent loadingSpinner="bubbles" loadingText="Loading more movie..." />
-                        </IonInfiniteScroll>
-                    )
-                }
-                {
-                    notMovies && (
-                        <div className="not-found-movies">
-                            <span className="not-found-movies-text">Not found movies</span>
-                        </div>
-                    )
-                }
-
-            </IonContent>
-        </IonPage>
-    );
+								</div>
+							</IonCard>
+						</div>
+					))
+				}
+				{
+					!stopScroll && (
+						<IonInfiniteScroll onIonInfinite={async (e) => {
+							await loadData(page + 1, true);
+							setPage(prevState => prevState + 1);
+							e.target.complete();
+						}}>
+							<IonInfiniteScrollContent loadingSpinner="bubbles" loadingText="Loading more movie..." />
+						</IonInfiniteScroll>
+					)
+				}
+				{
+					(stopScroll && page === 1) && (
+						<div className="not-found-movies">
+							<span className="not-found-movies-text">Not found movies</span>
+						</div>
+					)
+				}
+			</IonContent>
+		</IonPage>
+	);
 };
 
