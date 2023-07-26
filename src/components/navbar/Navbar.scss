@@ -1,0 +1,218 @@
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100vw;
+  height: 85px;
+  padding: 0 100px;
+  //background: radial-gradient(72.64% 49.53% at 6.36% 50.48%, #7EA3B2 0%, #657C85 100%);
+  background: #0d253f;
+
+  position: sticky;
+  top: 0;
+  left: 0;
+  z-index: 5;
+}
+
+.navbar-menu-container-logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 17px 0 33px 0;
+  width: 130px;
+}
+
+.navbar-menu-logo {
+  object-fit: contain;
+  width: 130px;
+  height: 50px;
+}
+
+.navbar-menu-btn-in {
+  display: none;
+}
+
+.navbar-mobile-btn-open {
+  display: none;
+}
+
+.navbar-mobile-btn-open:hover {
+  border: solid 1px #FFFFFF;
+  border-radius: 5px;
+}
+
+.navbar-mobile-btn-close {
+  display: none;
+  font-size: 30px;
+  padding: 40px 100px;
+}
+
+//.navbar-menu,
+.navbar-menu-items {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 40px;
+  color: #FFFFFF;
+}
+
+.navbar-menu a:active {
+  color: #FFAF37;
+}
+
+.navbar-menu a {
+  display: inline-block;
+  color: #FFFFFF;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.navbar-menu a::after {
+  content: '';
+  position: relative;
+  top: 3px;
+  display: block;
+  width: 0;
+  height: 2px;
+  background: #FFAF37;
+  transition: width .2s;
+}
+
+.navbar-menu a:hover::after {
+  width: 100%;
+  //transition: width .3s;
+}
+
+.navbar-menu-about {
+  display: none;
+  font-family: Roboto-Regular, serif;
+  font-style: normal;
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 19px;
+  padding-bottom: 4px;
+
+  color: #FFFFFF;
+}
+
+.navbar-menu-technologies,
+.navbar-menu-our-team,
+.navbar-menu-our-project,
+.navbar-menu-client-reviews,
+.navbar-menu-contact {
+  font-family: Roboto-Regular, serif;
+  font-style: normal;
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 19px;
+  padding-bottom: 4px;
+
+  color: #FFFFFF;
+}
+
+.navbar-menu-in {
+  width: 21.32px;
+  height: 15px;
+}
+
+.navbar:hover {
+  color: #FFAF37
+}
+
+//////// ---------- >>>>>>>> media screen
+
+@media screen and (max-width: 1024px) {
+  .navbar {
+    padding: 0 50px;
+    height: 60px;
+  }
+
+  .navbar-menu {
+    display: none;
+  }
+
+  .navbar-menu-btn-in {
+    display: flex;
+  }
+
+  .navbar-mobile-btn-open {
+    display: flex;
+    font-size: 23px;
+    cursor: pointer;
+    padding-top: 3px;
+    z-index: 1;
+  }
+
+  .navbar-menu-container-logo {
+    padding: 5px 0;
+  }
+
+  .navbar-menu {
+    display: block;
+    position: fixed;
+    left: -100%;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 40%;
+    height: 100%;
+    background-color: #1a2b43;
+    filter: opacity(0.89);
+    z-index: 10;
+    padding: 0;
+    transition: left 0.35s;
+  }
+
+  .navbar-menu-items {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    padding-top: 50px;
+    gap: 33px;
+  }
+
+  .active {
+    left: 0;
+  }
+
+  .navbar-menu a {
+    font-size: 22px;
+  }
+
+  .show {
+    display: none;
+  }
+
+  .show-about {
+    display: inline-block;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .navbar-menu-items {
+    padding-top: 50px;
+  }
+
+  .navbar {
+    padding: 0 30px;
+  }
+}
+
+@media screen and (max-width: 420px) {
+  .navbar {
+    padding: 0 20px;
+    height: 52px;
+  }
+
+  .navbar-menu {
+    width: 50%;
+  }
+}
+
+@media screen and (max-height: 380px) {
+
+  .navbar-menu-items {
+    gap: 20px;
+  }
+}
