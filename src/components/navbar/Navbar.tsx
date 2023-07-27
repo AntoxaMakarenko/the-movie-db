@@ -14,7 +14,7 @@ export const Navbar = () => {
 	const refMenu = useRef<any>(null)
 
 
-	const handleClickOutsideMenu =  (event) => {
+	const handleClickOutsideMenu =  (event: any) => {
 		if (refMenu.current && refMenu.current.contains(event.target)) {
 			setActiveMobileMenu(true);
 		} else if (refMenu.current && !refMenu.current.contains(event.target)) {

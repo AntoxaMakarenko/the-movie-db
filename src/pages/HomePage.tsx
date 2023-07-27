@@ -50,12 +50,12 @@ export const HomePage: React.FC = () => {
 
 	const [pathRequest, setPathRequest] = useState<any | string>(PATH_REQUEST.movieDay);
 	const [cardsData, setCardsData] = useState<typeOfCardsData[]>([]);
-	const [page, setPage] = useState<any | number>(1);
-	const [searchTerm, setSearchTerm] = useState<any | string | undefined>();
+	const [page, setPage] = useState<any>(1);
+	const [searchTerm, setSearchTerm] = useState<any>();
 	const [stopScroll, setStopScroll] = useState<boolean>(false);
 	const [isLoading, setIsLoading] = useState<boolean>(false);
 
-	const handleSearchInputChange = (event) => {
+	const handleSearchInputChange = (event: any) => {
 		const { value } = event.detail;
 		const result = value.charAt(0).toUpperCase() + value.slice(1)
 		setSearchTerm(result)
@@ -69,7 +69,8 @@ export const HomePage: React.FC = () => {
 		const titleForSearchMovies = [{titleResult: `${searchTerm}`}];
 		const titleForPopularMovies = [{titlePopular: 'Popular movies'}];
 
-		let updateMovies: any[]
+		let updateMovies: any;
+
 		if (pathRequest === PATH_REQUEST.search) {
 			updateMovies = [...titleForSearchMovies, ...movies]
 		} else if (pathRequest === PATH_REQUEST.movieDay) {
@@ -103,7 +104,7 @@ export const HomePage: React.FC = () => {
 			clearTimeout(debounceTimeout);
 		}
 
-		const newPath = (path) => {
+		const newPath = (path: any) => {
 			setIsLoading(true);
 			setPathRequest(path)
 			setPage(1)
@@ -179,7 +180,7 @@ export const HomePage: React.FC = () => {
 					!stopScroll && (
 						<IonInfiniteScroll onIonInfinite={async (e) => {
 							await loadData(page + 1, true);
-							setPage(prevState => prevState + 1);
+							setPage((prevState: any) => prevState + 1);
 							e.target.complete();
 						}}>
 							<IonInfiniteScrollContent loadingSpinner="bubbles" loadingText="Loading more movie..." />
