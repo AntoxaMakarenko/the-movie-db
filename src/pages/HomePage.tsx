@@ -69,7 +69,7 @@ export const HomePage: React.FC = () => {
 		const titleForSearchMovies = [{titleResult: `${searchTerm}`}];
 		const titleForPopularMovies = [{titlePopular: 'Popular movies'}];
 
-		let updateMovies = []
+		let updateMovies: any[]
 		if (pathRequest === PATH_REQUEST.search) {
 			updateMovies = [...titleForSearchMovies, ...movies]
 		} else if (pathRequest === PATH_REQUEST.movieDay) {
