@@ -30,8 +30,6 @@ const getQueryParams = ({ searchTerm, page}) => {
 	switch (true) {
 		case Boolean(searchTerm):
 			return `&query=${searchTerm}&page=${page}`
-		case Boolean(page):
-			return `&page=${page}`
 		default:
 			return `&page=${page}`
 
@@ -47,31 +45,35 @@ export const HomePage: React.FC = () => {
 	const [stopScroll, setStopScroll] = useState<boolean>(false);
 	const [isLoading, setIsLoading] = useState<boolean>(false);
 
+	const handleSearchInputChange = (event) => {
+		const { value } = event.detail;
+		const result = value.charAt(0).toUpperCase() + value.slice(1)
+		setSearchTerm(result)
+	};
+
 
 	const loadData = async (pageNumber: number, loadMore?: true) => {
 		const resp = await axios.get(`${ROOT_URL}${pathRequest}?api_key=${API_KEY}${getQueryParams({ searchTerm, page: pageNumber })}`)
-		const movies = resp.data.results.length ? resp.data.results : [{titleResult: `${searchTerm}`}];
+		const movies = resp.data.results.length ? resp.data.results : [];
 
 		const titleForSearchMovies = [{titleResult: `${searchTerm}`}];
-		const titleForPopularMovies = [{titlePopular: 'Favorite'}];
+		const titleForPopularMovies = [{titlePopular: 'Popular movies'}];
 
 		let updateMovies = []
 		if (pathRequest === PATH_REQUEST.search) {
 			updateMovies = [...titleForSearchMovies, ...movies]
 		} else if (pathRequest === PATH_REQUEST.movieDay) {
 			updateMovies = [...titleForPopularMovies, ...movies]
+		} else if (!movies.length) {
+			updateMovies = [... titleForSearchMovies];
 		}
 
-		console.log('movies', movies);
-		console.log('cardsData', cardsData);
-		console.log('stopScroll', stopScroll);
-		console.log('page', page);
 		if (loadMore) {
 			setCardsData(prev => [...prev, ...movies])
-		} else if (movies.length > 1) {
+		} else if (updateMovies.length > 1 && movies[0].id) {
 			setCardsData(updateMovies)
-		} else if (movies.length === 1 && searchTerm) {
-			setCardsData(movies)
+		} else if (updateMovies.length === 1 && searchTerm) {
+			setCardsData(updateMovies)
 		}
 
 		if (movies.length < 20 && searchTerm) {
@@ -100,7 +102,7 @@ export const HomePage: React.FC = () => {
 			}, 1000)
 		}
 
-		if (searchTerm === undefined || searchTerm === '' ) {
+		if (!searchTerm ) {
 			newPath(PATH_REQUEST.movieDay)
 		} else {
 			newPath(PATH_REQUEST.search)
@@ -119,27 +121,34 @@ export const HomePage: React.FC = () => {
 						label="Search movie"
 						color="success"
 						value={searchTerm}
-						onIonInput={e => setSearchTerm(e.target.value)}
+						onIonInput={e => handleSearchInputChange(e)}
 					>
 					</IonInput>
 					{isLoading && <ion-spinner name="crescent" />}
 				</IonItem>
 				{
 					cardsData.length > 1 && cardsData.map((el, i) => (
-						<div key={i} style={{padding: '10px 50px'}}>
-								<div style={{padding: '10px 60px', width: '100%', height: '25px', display: 'block', color: 'darkcyan'}}>
-									{
-										el.titleResult &&
-										(`For your search "${el.titleResult}" founded results`)
-									}
-									{
-										el.titlePopular && (
-											'Popular movies'
-										)
-									}
-								</div>
+						<div
+							key={i}
+							className="ion-card-list"
+						>
+							{
+								el.titleResult || el.titlePopular && (
+									<div style={{padding: '10px 60px', width: '100%', height: '25px', display: 'block', color: 'darkcyan'}}>
+										{
+											el.titleResult &&
+											(`For your search "${el.titleResult}" founded results`)
+										}
+										{
+											el.titlePopular && (
+												el.titlePopular
+											)
+										}
+									</div>
+								)
+							}
 							{ !el.titleResult && !el.titlePopular && (
-									<IonCard style={{display: 'flex'}}>
+									<IonCard style={{display: 'flex', maxHeight: '250px', }}>
 										<img
 											alt="Logo of movie"
 											src={`https://image.tmdb.org/t/p/w500/${el.poster_path}`}
@@ -148,9 +157,10 @@ export const HomePage: React.FC = () => {
 										<div style={{display: 'flex', flexDirection: 'column'}}>
 											<IonCardHeader>
 												<IonCardTitle>{el.original_title}</IonCardTitle>
-												<IonCardSubtitle>{el.release_date}</IonCardSubtitle>
+												<IonCardSubtitle>Data of release: {el.release_date}</IonCardSubtitle>
+												<IonCardSubtitle>Average: {el.vote_average}</IonCardSubtitle>
 											</IonCardHeader>
-											<IonCardContent>{el.overview}</IonCardContent>
+											<IonCardContent className="ion-card-list-content">{el.overview}</IonCardContent>
 
 										</div>
 									</IonCard>
@@ -171,7 +181,7 @@ export const HomePage: React.FC = () => {
 					)
 				}
 				{
-					(stopScroll && page === 1 && cardsData.length === 1 ) && (
+					(stopScroll && page === 1 && cardsData.length === 1) && (
 						<div className="not-found-movies">
 							<div className="not-found-movies-text">
 								<h2>There are no results for "{cardsData[0].titleResult}"</h2>

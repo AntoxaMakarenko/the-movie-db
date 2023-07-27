@@ -8,6 +8,10 @@
   width: 100%;
 }
 
+.ion-card-list {
+  padding: 10px 50px;
+}
+
 .load-button {
   display: flex;
   align-items: center;
@@ -34,4 +38,16 @@
   flex-direction: column;
   padding: 10px;
   color: black;
+}
+
+@media screen and (max-width: 430px){
+  .ion-card-list {
+    padding: 10px 20px;
+  }
+
+  .ion-card-list-content {
+    height: 100%;
+    display: block;
+    overflow: hidden;
+  }
 }
