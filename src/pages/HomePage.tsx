@@ -36,12 +36,22 @@ const getQueryParams = ({ searchTerm, page}) => {
 	}
 }
 
+interface typeOfCardsData {
+	poster_path: string,
+	original_title: string,
+	release_date: any,
+	vote_average: number,
+	overview: string,
+
+	titleResult: string
+}
+
 export const HomePage: React.FC = () => {
 
-	const [pathRequest, setPathRequest] = useState<string>(PATH_REQUEST.movieDay);
-	const [cardsData, setCardsData] = useState<any[]>([]);
-	const [page, setPage] = useState<number>(1);
-	const [searchTerm, setSearchTerm] = useState<string | undefined>();
+	const [pathRequest, setPathRequest] = useState<any | string>(PATH_REQUEST.movieDay);
+	const [cardsData, setCardsData] = useState<typeOfCardsData[]>([]);
+	const [page, setPage] = useState<any | number>(1);
+	const [searchTerm, setSearchTerm] = useState<any | string | undefined>();
 	const [stopScroll, setStopScroll] = useState<boolean>(false);
 	const [isLoading, setIsLoading] = useState<boolean>(false);
 
@@ -87,7 +97,7 @@ export const HomePage: React.FC = () => {
 
 	useEffect(() => {
 
-		let debounceTimeout = null;
+		let debounceTimeout: any;
 
 		if (debounceTimeout) {
 			clearTimeout(debounceTimeout);
@@ -127,28 +137,24 @@ export const HomePage: React.FC = () => {
 					{isLoading && <ion-spinner name="crescent" />}
 				</IonItem>
 				{
-					cardsData.length > 1 && cardsData.map((el, i) => (
+					cardsData.length > 1 && cardsData.map((el: any, i: number) => (
 						<div
 							key={i}
 							className="ion-card-list"
 						>
-							{
-								el.titleResult || el.titlePopular && (
-									<div style={{padding: '10px 60px', width: '100%', height: '25px', display: 'block', color: 'darkcyan'}}>
-										{
-											el.titleResult &&
-											(`For your search "${el.titleResult}" founded results`)
-										}
-										{
-											el.titlePopular && (
-												el.titlePopular
-											)
-										}
-									</div>
-								)
-							}
+								<div style={{padding: '10px 60px', width: '100%', height: '25px', display: 'block', color: 'darkcyan'}}>
+									{
+										el.titleResult &&
+										(`For your search "${el.titleResult}" founded results`)
+									}
+									{
+										el.titlePopular && (
+											el.titlePopular
+										)
+									}
+								</div>
 							{ !el.titleResult && !el.titlePopular && (
-									<IonCard style={{display: 'flex', maxHeight: '250px', }}>
+									<IonCard style={{ display: 'flex', maxHeight: '250px' }}>
 										<img
 											alt="Logo of movie"
 											src={`https://image.tmdb.org/t/p/w500/${el.poster_path}`}

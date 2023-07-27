@@ -9,9 +9,9 @@ import './Navbar.scss'
 
 export const Navbar = () => {
 
-	const [activeMobileMenu, setActiveMobileMenu] = useState(false);
+	const [activeMobileMenu, setActiveMobileMenu] = useState<boolean>(false);
 
-	const refMenu = useRef(null)
+	const refMenu = useRef<any>(null)
 
 
 	const handleClickOutsideMenu =  (event) => {
