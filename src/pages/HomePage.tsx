@@ -11,7 +11,7 @@ import {
 	IonInfiniteScrollContent,
 	IonCardSubtitle,
 	IonInput,
-	IonItem,
+	IonItem, IonSpinner,
 } from '@ionic/react';
 import axios from "axios";
 import './HomePage.scss';
@@ -135,7 +135,7 @@ export const HomePage: React.FC = () => {
 						onIonInput={e => handleSearchInputChange(e)}
 					>
 					</IonInput>
-					{isLoading && <ion-spinner <JSX.IntrinsicElements> name="crescent" />}
+					{isLoading && <IonSpinner name="crescent" />}
 				</IonItem>
 				{
 					cardsData.length > 1 && cardsData.map((el: any, i: number) => (
