@@ -135,7 +135,7 @@ export const HomePage: React.FC = () => {
 						onIonInput={e => handleSearchInputChange(e)}
 					>
 					</IonInput>
-					{isLoading && <ion-spinner name="crescent" />}
+					{isLoading && <ion-spinner <any> name="crescent" />}
 				</IonItem>
 				{
 					cardsData.length > 1 && cardsData.map((el: any, i: number) => (
