@@ -26,7 +26,7 @@ const PATH_REQUEST = {
 const API_KEY = 'fe596d9ecc661f727490237e8d8c7bf8';
 
 
-const getQueryParams = ({ searchTerm, page}) => {
+const getQueryParams = ({ searchTerm, page}): any => {
 	switch (true) {
 		case Boolean(searchTerm):
 			return `&query=${searchTerm}&page=${page}`
