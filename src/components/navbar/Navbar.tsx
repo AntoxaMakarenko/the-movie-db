@@ -59,6 +59,3 @@ export const Navbar = () => {
 		</div>
 	);
 };
-
-export class NavBar {
-}

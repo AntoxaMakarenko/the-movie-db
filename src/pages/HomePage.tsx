@@ -11,7 +11,7 @@ import {
 	IonInfiniteScrollContent,
 	IonCardSubtitle,
 	IonInput,
-	IonItem, IonSpinner,
+	IonItem, IonSpinner, IonLabel, IonList,
 } from '@ionic/react';
 import axios from "axios";
 import './HomePage.scss';
@@ -42,11 +42,10 @@ interface typeOfCardsData {
 	release_date: any,
 	vote_average: number,
 	overview: string,
-
 	titleResult: string
 }
 
-export const HomePage: React.FC = () => {
+export const HomePage: React.FC = ({ ROOT_URL, API_KEY, setMovieId }) => {
 
 	const [pathRequest, setPathRequest] = useState<any | string>(PATH_REQUEST.movieDay);
 	const [cardsData, setCardsData] = useState<typeOfCardsData[]>([]);
@@ -54,6 +53,8 @@ export const HomePage: React.FC = () => {
 	const [searchTerm, setSearchTerm] = useState<any>();
 	const [stopScroll, setStopScroll] = useState<boolean>(false);
 	const [isLoading, setIsLoading] = useState<boolean>(false);
+
+	const [minLength, setMinLength] = useState(false)
 
 	const handleSearchInputChange = (event: any) => {
 		const { value } = event.detail;
@@ -104,19 +105,24 @@ export const HomePage: React.FC = () => {
 			clearTimeout(debounceTimeout);
 		}
 
-		const newPath = (path: any) => {
+		const newPath = (path: any, time: number) => {
 			setIsLoading(true);
 			setPathRequest(path)
 			setPage(1)
 			debounceTimeout = setTimeout(async () => {
 				await loadData(1);
-			}, 1000)
+			}, time)
 		}
 
 		if (!searchTerm ) {
-			newPath(PATH_REQUEST.movieDay)
-		} else {
-			newPath(PATH_REQUEST.search)
+			newPath(PATH_REQUEST.movieDay, 0)
+			setMinLength(false)
+		} else if (searchTerm.length >= 3) {
+			setMinLength(false)
+			newPath(PATH_REQUEST.search, 1000)
+		} else if (1 <= searchTerm.length < 3) {
+			setMinLength(true)
+			setIsLoading(false)
 		}
 
 		return () => {
@@ -137,23 +143,28 @@ export const HomePage: React.FC = () => {
 					</IonInput>
 					{isLoading && <IonSpinner name="crescent" />}
 				</IonItem>
+				<IonLabel className="ion-input-attention">
+					{minLength ? 'Please, write more information for search' : ''}
+				</IonLabel>
 				{
 					cardsData.length > 1 && cardsData.map((el: any, i: number) => (
-						<div
+						<IonList
 							key={i}
 							className="ion-card-list"
 						>
-								<div style={{padding: '10px 60px', width: '100%', height: '25px', display: 'block', color: 'darkcyan'}}>
-									{
-										el.titleResult &&
-										(`For your search "${el.titleResult}" founded results`)
-									}
-									{
-										el.titlePopular && (
-											el.titlePopular
-										)
-									}
+							{
+								el.titleResult &&
+								<div className="ion-card-label-result-search">
+									{`For your search "${el.titleResult}" founded results`}
 								</div>
+							}
+							{
+								el.titlePopular && (
+									<div className="ion-card-label-result-search">
+										{el.titlePopular}
+									</div>
+								)
+							}
 							{ !el.titleResult && !el.titlePopular && (
 									<IonCard style={{ display: 'flex', maxHeight: '250px' }}>
 										<img
@@ -161,9 +172,20 @@ export const HomePage: React.FC = () => {
 											src={`https://image.tmdb.org/t/p/w500/${el.poster_path}`}
 											style={{ height: '250px', objectFit: 'contain', padding: '16px'}}
 										/>
-										<div style={{display: 'flex', flexDirection: 'column'}}>
+										<div
+											style={{display: 'flex', flexDirection: 'column'}}
+										>
 											<IonCardHeader>
-												<IonCardTitle>{el.original_title}</IonCardTitle>
+												<IonCardTitle
+												>
+													<button
+														style={{background: 'none'}}
+														onClick={() => setMovieId(el.id)}
+													>
+														{el.original_title}
+													</button>
+
+												</IonCardTitle>
 												<IonCardSubtitle>Data of release: {el.release_date}</IonCardSubtitle>
 												<IonCardSubtitle>Average: {el.vote_average}</IonCardSubtitle>
 											</IonCardHeader>
@@ -173,7 +195,7 @@ export const HomePage: React.FC = () => {
 									</IonCard>
 								)
 							}
-						</div>
+						</IonList>
 					))
 				}
 				{
@@ -183,7 +205,7 @@ export const HomePage: React.FC = () => {
 							setPage((prevState: any) => prevState + 1);
 							e.target.complete();
 						}}>
-							<IonInfiniteScrollContent loadingSpinner="bubbles" loadingText="Loading more movie..." />
+							<IonInfiniteScrollContent loadingSpinner="bubbles" loadingText="Loading more movies..." />
 						</IonInfiniteScroll>
 					)
 				}
