@@ -1,0 +1,25 @@
+
+.test {
+  display: flex;
+  width: 100%;
+}
+.window-video {
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  z-index: 5;
+  top: 10px;
+
+}
+
+.close-video {
+  display: flex;
+  align-items: center;
+  justify-content: end;
+  background-color: black;
+  color: whitesmoke;
+}
+
+.show-button {
+  display: none;
+}

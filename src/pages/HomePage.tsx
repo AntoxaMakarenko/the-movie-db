@@ -11,20 +11,10 @@ import {
 	IonInfiniteScrollContent,
 	IonCardSubtitle,
 	IonInput,
-	IonItem, IonSpinner, IonLabel, IonList,
+	IonItem, IonSpinner, IonLabel, IonList, IonRouterLink, IonHeader, IonImg,
 } from '@ionic/react';
 import axios from "axios";
 import './HomePage.scss';
-
-
-const ROOT_URL = 'https://api.themoviedb.org/3/';
-
-const PATH_REQUEST = {
-	movieDay: 'trending/movie/day',
-	search: 'search/movie'
-}
-const API_KEY = 'fe596d9ecc661f727490237e8d8c7bf8';
-
 
 const getQueryParams = ({ searchTerm, page}: any) => {
 	switch (true) {
@@ -34,6 +24,13 @@ const getQueryParams = ({ searchTerm, page}: any) => {
 			return `&page=${page}`
 
 	}
+}
+const ROOT_URL = 'https://api.themoviedb.org/3/';
+const API_KEY = 'fe596d9ecc661f727490237e8d8c7bf8';
+
+const PATH_REQUEST = {
+	movieDay: 'trending/movie/day',
+	search: 'search/movie'
 }
 
 interface typeOfCardsData {
@@ -45,7 +42,7 @@ interface typeOfCardsData {
 	titleResult: string
 }
 
-export const HomePage: React.FC = ({ ROOT_URL, API_KEY, setMovieId }) => {
+export const HomePage: React.FC = ({}) => {
 
 	const [pathRequest, setPathRequest] = useState<any | string>(PATH_REQUEST.movieDay);
 	const [cardsData, setCardsData] = useState<typeOfCardsData[]>([]);
@@ -131,7 +128,12 @@ export const HomePage: React.FC = ({ ROOT_URL, API_KEY, setMovieId }) => {
 	}, [searchTerm, pathRequest])
 
 	return (
-		<IonPage style={{paddingTop: '60px'}}>
+		<IonPage>
+			<IonHeader
+				style={{color: 'whitesmoke', backgroundColor: '#0d253f',height: '60px', padding: '20px 50px'}}
+			>
+				Movies
+			</IonHeader>
 			<IonContent>
 				<IonItem className="ion-input-container">
 					<IonInput
@@ -166,33 +168,27 @@ export const HomePage: React.FC = ({ ROOT_URL, API_KEY, setMovieId }) => {
 								)
 							}
 							{ !el.titleResult && !el.titlePopular && (
-									<IonCard style={{ display: 'flex', maxHeight: '250px' }}>
-										<img
-											alt="Logo of movie"
-											src={`https://image.tmdb.org/t/p/w500/${el.poster_path}`}
-											style={{ height: '250px', objectFit: 'contain', padding: '16px'}}
-										/>
-										<div
-											style={{display: 'flex', flexDirection: 'column'}}
-										>
-											<IonCardHeader>
-												<IonCardTitle
-												>
-													<button
-														style={{background: 'none'}}
-														onClick={() => setMovieId(el.id)}
-													>
-														{el.original_title}
-													</button>
+								<IonItem
+								         button={true}
+								         routerLink={`/movie/${el.id}`}
+								>
+									<img
+										alt="Logo of movie"
+										src={`https://image.tmdb.org/t/p/w500/${el.poster_path}`}
+										style={{ height: '250px', borderRadius: '5px', objectFit: 'contain', padding: '10px'}}
 
-												</IonCardTitle>
-												<IonCardSubtitle>Data of release: {el.release_date}</IonCardSubtitle>
-												<IonCardSubtitle>Average: {el.vote_average}</IonCardSubtitle>
-											</IonCardHeader>
-											<IonCardContent className="ion-card-list-content">{el.overview}</IonCardContent>
-
-										</div>
+									/>
+									<IonCard
+										style={{height: '230px'}}
+									>
+										<IonCardHeader>
+											<IonCardTitle>{el.original_title}</IonCardTitle>
+											<IonCardSubtitle>Data of release: {el.release_date}</IonCardSubtitle>
+											<IonCardSubtitle>Average: {el.vote_average}</IonCardSubtitle>
+										</IonCardHeader>
+										<IonCardContent className="ion-card-list-content">{el.overview}</IonCardContent>
 									</IonCard>
+								</IonItem>
 								)
 							}
 						</IonList>
