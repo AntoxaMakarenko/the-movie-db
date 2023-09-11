@@ -11,7 +11,7 @@ import {
 	IonInfiniteScrollContent,
 	IonCardSubtitle,
 	IonInput,
-	IonItem, IonSpinner, IonLabel, IonList, IonRouterLink, IonHeader, IonImg,
+	IonItem, IonSpinner, IonLabel, IonList, IonRouterLink, IonHeader, IonImg, IonSegment, IonSegmentButton, IonButton,
 } from '@ionic/react';
 import axios from "axios";
 import './HomePage.scss';
@@ -30,6 +30,7 @@ const API_KEY = 'fe596d9ecc661f727490237e8d8c7bf8';
 
 const PATH_REQUEST = {
 	movieDay: 'trending/movie/day',
+	movieWeek: 'trending/movie/week',
 	search: 'search/movie'
 }
 
@@ -45,6 +46,7 @@ interface typeOfCardsData {
 export const HomePage: React.FC = ({}) => {
 
 	const [pathRequest, setPathRequest] = useState<any | string>(PATH_REQUEST.movieDay);
+	const [pathRequestTrending, setPathRequestTrending] = useState<any | string>()
 	const [cardsData, setCardsData] = useState<typeOfCardsData[]>([]);
 	const [page, setPage] = useState<any>(1);
 	const [searchTerm, setSearchTerm] = useState<any>();
@@ -71,7 +73,7 @@ export const HomePage: React.FC = ({}) => {
 
 		if (pathRequest === PATH_REQUEST.search) {
 			updateMovies = [...titleForSearchMovies, ...movies]
-		} else if (pathRequest === PATH_REQUEST.movieDay) {
+		} else if (pathRequest === PATH_REQUEST.movieDay || pathRequest === PATH_REQUEST.movieWeek) {
 			updateMovies = [...titleForPopularMovies, ...movies]
 		} else if (!movies.length) {
 			updateMovies = [... titleForSearchMovies];
@@ -111,10 +113,17 @@ export const HomePage: React.FC = ({}) => {
 			}, time)
 		}
 
-		if (!searchTerm ) {
+		if (!searchTerm && !pathRequestTrending) {
 			newPath(PATH_REQUEST.movieDay, 0)
 			setMinLength(false)
-		} else if (searchTerm.length >= 3) {
+		} else if (!searchTerm && pathRequestTrending) {
+			setPathRequest(pathRequestTrending)
+			setPage(1)
+			debounceTimeout = setTimeout(async () => {
+				await loadData(1);
+			}, 500)
+			setMinLength(false)
+		}else if (searchTerm.length >= 3) {
 			setMinLength(false)
 			newPath(PATH_REQUEST.search, 1000)
 		} else if (1 <= searchTerm.length < 3) {
@@ -125,7 +134,14 @@ export const HomePage: React.FC = ({}) => {
 		return () => {
 			clearTimeout(debounceTimeout)
 		}
-	}, [searchTerm, pathRequest])
+	}, [searchTerm, pathRequest, pathRequestTrending])
+
+	const handleSegmentChange = (e) => {
+		setPathRequestTrending(e.detail.value);
+	};
+
+	console.log('pathRequest', pathRequest);
+	console.log('pathRequestTrending', pathRequestTrending);
 
 	return (
 		<IonPage>
@@ -164,13 +180,24 @@ export const HomePage: React.FC = ({}) => {
 								el.titlePopular && (
 									<div className="ion-card-label-result-search">
 										{el.titlePopular}
+										<IonSegment
+											color="success"
+											onIonChange={handleSegmentChange} value={pathRequest}
+										>
+											<IonSegmentButton value={PATH_REQUEST.movieDay}>
+												<IonLabel>Today</IonLabel>
+											</IonSegmentButton>
+											<IonSegmentButton value={PATH_REQUEST.movieWeek}>
+												<IonLabel >This week</IonLabel>
+											</IonSegmentButton>
+										</IonSegment>
 									</div>
 								)
 							}
 							{ !el.titleResult && !el.titlePopular && (
 								<IonItem
 								         button={true}
-								         routerLink={`/movie/${el.id}`}
+								         routerLink={`/movie/${el.id}/${el.original_title.toLowerCase()}`}
 								>
 									<img
 										alt="Logo of movie"

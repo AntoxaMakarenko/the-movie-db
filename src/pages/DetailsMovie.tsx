@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from "react";
+import React, {Fragment, useEffect, useState} from "react";
 import {
 	IonButton,
 	IonCard,
@@ -24,7 +24,6 @@ import 'swiper/css/scrollbar';
 
 import './DetailsMovie.scss'
 import axios from "axios";
-import {IonContext} from "@ionic/react/dist/types/contexts/IonContext";
 
 interface typeOfDataMovie {
 	backdrop_path: string,
@@ -49,7 +48,7 @@ const PATH_REQUEST = {
 	credits: 'credits',
 	videos: 'videos'
 }
-type MovieDetailsProps = RouteComponentProps<{ id: string }>;
+type MovieDetailsProps = RouteComponentProps<{ id: string; name: string }>;
 
 const delay = ms => {
 	return new Promise(resolve => {
@@ -59,7 +58,7 @@ const delay = ms => {
 	});
 };
 
-const DetailsMovie: React.FC<MovieDetailsProps> = ( { match} ) => {
+export const DetailsMovie: React.FC<MovieDetailsProps> = ( { match} ) => {
 
 	const [show, setShow] = useState<boolean>(false)
 	const [loading, setLoading] = useState<boolean>(true)
@@ -68,9 +67,12 @@ const DetailsMovie: React.FC<MovieDetailsProps> = ( { match} ) => {
 	const [dataVideos, setDataVideos] = useState<any>([])
 
 	const movieId = match.params.id
-	const imageUrl = `https://image.tmdb.org/t/p/w500/${dataMovie && dataMovie.backdrop_path}`
+	const movieName = match.params.name
+	console.log('movieId', movieId);
+	console.log('match', match);
 
 	useEffect(() => {
+		setLoading(true)
 		const loadDataMovie = async () => {
 			const respAbout = await axios.get(`${ROOT_URL}/movie/${movieId}?api_key=${API_KEY}&language=en-US`);
 			const infoMovie = respAbout.data ? respAbout.data : {};
@@ -130,20 +132,55 @@ const DetailsMovie: React.FC<MovieDetailsProps> = ( { match} ) => {
 		}
 	}
 
-	console.log('dataMovie', Object.keys(dataMovie).length);
+	const DATA_INFO_MOVIE = [
+		{
+			title: 'Original name',
+			data: dataMovie.original_title
+		},
+		{
+			title: 'Status',
+			data: dataMovie.status
+		},
+		{
+			title: 'Original language',
+			data: dataMovie.original_language ? dataMovie.original_language.toUpperCase() : ''
+		},
+		{
+			title: 'Budget',
+			data: dataMovie.budget ? `$ ${budget(dataMovie.budget)}` : dataMovie.budget
+		},
+		{
+			title: 'Revenue',
+			data: dataMovie.revenue ? `$ ${budget(dataMovie.revenue)}` : dataMovie.revenue
+		},
+	]
+
+	console.log('dataMovie', dataMovie);
 	console.log('dataCredits', dataCredits);
-	console.log('imageUrl', imageUrl);
+
+	console.log('link', `/movie/${movieId}/${dataMovie.original_title}/cast`)
 
 	return (
 		<IonPage>
 			<IonHeader
-				style={{color: 'whitesmoke', backgroundColor: '#0d253f',height: '60px', padding: '20px 50px'}}
+				style={{display: 'flex', alignItems: 'center', gap: '30px', color: 'whitesmoke', backgroundColor: '#0d253f', height: '60px', padding: '20px'}}
 			>
-				{dataMovie.title}
+				<IonButton
+					routerLink={`/`}
+				>
+					Home
+				</IonButton>
+				<IonText>
+					Movie
+				</IonText>
+				<IonText>
+					{movieName.slice(0, 1).toUpperCase() + movieName.slice(1)}
+				</IonText>
+
 			</IonHeader>
 			<IonContent>
 				<IonCard
-					style={{display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '30px', padding: '30px', background: 'none'}}
+					style={{display: 'flex', alignItems: 'start', justifyContent: 'start', background: 'none'}}
 				>
 					{
 						!loading &&
@@ -157,7 +194,7 @@ const DetailsMovie: React.FC<MovieDetailsProps> = ( { match} ) => {
 						!loading
 							?
 						<img
-							style={{height: '400px', borderRadius: '20px',}}
+							style={{height: '400px', borderRadius: '50px', padding: '30px'}}
 							alt="poster_path"
 							src={`https://image.tmdb.org/t/p/w500/${dataMovie.poster_path}`}
 						/>
@@ -168,7 +205,7 @@ const DetailsMovie: React.FC<MovieDetailsProps> = ( { match} ) => {
 						/>
 
 					}
-					<IonCardTitle style={{maxWidth: '70%'}}>
+					<IonCardTitle style={{maxWidth: '80%', padding: '30px'}}>
 								<IonLabel style={{display: 'flex', flexDirection: 'column', padding: '10px'}}>
 									<IonText style={{display: 'flex', gap: '10px'}}>
 										<IonText style={{fontWeight: '700'}}>
@@ -257,7 +294,7 @@ const DetailsMovie: React.FC<MovieDetailsProps> = ( { match} ) => {
 										width="610"
 										height="400"
 										src={`https://www.youtube.com/embed/${dataVideos[0] && dataVideos[0].key}`}
-										frameBorder="0"
+										// frameBorder="0"
 										allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
 										allowFullScreen
 										title="Embedded youtube"
@@ -277,7 +314,7 @@ const DetailsMovie: React.FC<MovieDetailsProps> = ( { match} ) => {
 						<div style={{width: '75%', padding: '10px 50px'}}>
 							<IonText style={{padding: '0 0 0 0', width: '100%'}}>
 								{
-									dataCredits.length ? 'Cast' : <IonSkeletonText animated={true} style={{ height: '20px'}}/>
+									!loading && dataCredits.length ? 'Cast' : <IonSkeletonText animated={true} style={{ height: '20px'}}/>
 								}
 							</IonText>
 							<Swiper
@@ -287,7 +324,7 @@ const DetailsMovie: React.FC<MovieDetailsProps> = ( { match} ) => {
 								scrollbar={{draggable: true}}
 							>
 								{
-									dataCredits.length ? dataCredits.slice(0, 10).map((el: any, i: number) => (
+									dataCredits.length && !loading ? dataCredits.slice(0, 10).map((el: any, i: number) => (
 										<SwiperSlide
 											className="out-team-slide"
 											key={i}
@@ -297,7 +334,7 @@ const DetailsMovie: React.FC<MovieDetailsProps> = ( { match} ) => {
 												button={true}
 												key={i}
 												style={{ height: '284px'}}
-												routerLink={`/person/${el.id}`}
+												routerLink={`/person/${el.id}/${el.name}`}
 											>
 												<img
 													style={{objectFit: 'cover', height: '200px', width: '150px' }}
@@ -316,75 +353,57 @@ const DetailsMovie: React.FC<MovieDetailsProps> = ( { match} ) => {
 										</SwiperSlide>
 									)) : <IonSkeletonText animated={true} style={{ height: '170px'}}/>
 								}
+								{
+									!loading && dataCredits.length !== 0 &&
+										<SwiperSlide className="out-team-slide"
+										             style={{
+											             display: "flex",
+											             alignItems: 'center',
+											             justifyContent: 'center',
+											             height: '335px',
+											             padding: '20px 0'
+										             }}
+										>
+											<IonButton
+												routerLink={`/movie-cast/${movieId}/${movieName.toLowerCase()}/cast`}
+											>
+												More
+											</IonButton>
+										</SwiperSlide>
+								}
 							</Swiper>
 						</div>
-						<IonContent>
-							<IonList>
-								<IonCardTitle>
-									{
-										loading ? <IonSkeletonText animated={true} style={{ height: '10px'}} /> : 'Original name'
-									}
-								</IonCardTitle>
-								<IonNote>
-									{
-										loading ? <IonSkeletonText animated={true} style={{ height: '10px'}} /> : dataMovie.original_title
-									}
-								</IonNote>
-							</IonList>
-							<IonList>
-								<IonCardTitle>
-									{
-										loading ? <IonSkeletonText animated={true} style={{ height: '10px'}} /> : 'Status'
-									}
-								</IonCardTitle>
-								<IonNote>
-									{
-										loading ? <IonSkeletonText animated={true} style={{ height: '10px'}} /> : dataMovie.status
-									}
-								</IonNote>
-							</IonList>
-							<IonList>
-								<IonCardTitle>
-									{
-										loading ? <IonSkeletonText animated={true} style={{ height: '10px'}} /> : 'Original language'
-									}
-								</IonCardTitle>
-								<IonNote>
-									{
-										loading ? <IonSkeletonText animated={true} style={{ height: '10px'}} /> : dataMovie.original_language
-									}
-								</IonNote>
-							</IonList>
-							<IonList>
-								<IonCardTitle>
-									{
-										loading ? <IonSkeletonText animated={true} style={{ height: '10px'}} /> : 'Budget'
-									}
-
-								</IonCardTitle>
-								<IonNote>
-									{
-										loading ? <IonSkeletonText animated={true} style={{ height: '10px'}} /> : `${budget(dataMovie.budget)}`
-									}
-								</IonNote>
-							</IonList>
-							<IonList>
-								<IonCardTitle>
-									{
-										loading ? <IonSkeletonText animated={true} style={{ height: '10px'}} /> : 'Revenue'
-									}
-								</IonCardTitle>
-								<IonNote>
-									{
-										loading ? <IonSkeletonText animated={true} style={{ height: '10px'}} /> : `$budget(dataMovie.revenue)}`
-									}
-								</IonNote>
-							</IonList>
-						</IonContent>
+						<IonList style={{display: 'flex', alignItems: 'start', justifyContent: 'center', flexDirection: 'column', padding: '30px'}}>
+							{
+								DATA_INFO_MOVIE.map((el, i) => (
+									<Fragment key={i}>
+										{
+											loading
+												?
+												<IonList>
+													<IonCardTitle>
+														<IonSkeletonText animated={ true } style={{ width: '200px', height: '20px' }} />
+													</IonCardTitle>
+													<IonNote>
+														<IonSkeletonText animated={ true } style={{ width: '200px', height: '20px' }} />
+													</IonNote>
+												</IonList>
+												: (el.data !== 0 || '') &&
+												<IonList>
+													<IonCardTitle>
+														{el.title}
+													</IonCardTitle>
+													<IonNote>
+														{ el.data }
+													</IonNote>
+												</IonList>
+										}
+									</Fragment>
+								))
+							}
+						</IonList>
 				</IonItem>
 			</IonContent>
 		</IonPage>
 	)
 }
-
-export default DetailsMovie
